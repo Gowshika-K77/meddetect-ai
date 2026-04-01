@@ -10,8 +10,9 @@ app = Flask(__name__)
 model_path = "model/pneumonia_cnn_model.h5"
 if not os.path.exists(model_path):
     os.makedirs("model", exist_ok=True)
-    gdown.download("https://drive.google.com/uc?id=1rG2jDLrmFkFwSIqk-JsVdCp_0VhIMp6S", model_path, quiet=False)
-
+    url = "https://drive.google.com/uc?export=download&id=1rG2jDLrmFkFwSIqk-JsVdCp_0VhIMp6S&confirm=t"
+    import urllib.request
+    urllib.request.urlretrieve(url, model_path)
 # Load model
 from manual_model import create_model
 model = create_model()
