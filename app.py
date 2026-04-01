@@ -1,13 +1,21 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 from PIL import Image
+import gdown
+import os
 
 app = Flask(__name__)
+
+# Download model from Google Drive if not present
+model_path = "model/pneumonia_cnn_model.h5"
+if not os.path.exists(model_path):
+    os.makedirs("model", exist_ok=True)
+    gdown.download("https://drive.google.com/uc?id=1rG2jDLrmFkFwSIqk-JsVdCp_0VhIMp6S", model_path, quiet=False)
 
 # Load model
 from manual_model import create_model
 model = create_model()
-model.load_weights("model/pneumonia_cnn_model.h5")
+model.load_weights(model_path)
 
 def preprocess_image(image):
     # Convert to RGB in case it's grayscale or RGBA
@@ -41,14 +49,14 @@ def predict():
 
         if confidence > 0.5:
             result = "PNEUMONIA"
-            display_confidence = confidence          # confidence of being pneumonia
+            display_confidence = confidence
         else:
             result = "NORMAL"
-            display_confidence = 1 - confidence     # confidence of being normal
+            display_confidence = 1 - confidence
 
         return jsonify({
             'result': result,
-            'confidence': round(display_confidence * 100, 2)   # send as percentage
+            'confidence': round(display_confidence * 100, 2)
         })
 
     except Exception as e:
