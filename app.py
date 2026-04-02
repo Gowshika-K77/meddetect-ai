@@ -1,16 +1,18 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import numpy as np
 from PIL import Image
 import gdown
 import os
+import tensorflow as tf
+from manual_model import create_model
 
 app = Flask(__name__)
 
-# Download model from Google Drive if not present
+# Download model once
 model_path = "model/pneumonia_cnn_model.h5"
 if not os.path.exists(model_path):
     os.makedirs("model", exist_ok=True)
-    print("Downloading model... please wait")
+    print("Downloading model...")
     gdown.download(
         id="1rG2jDLrmFkFwSIqk-JsVdCp_0VhIMp6S",
         output=model_path,
@@ -19,10 +21,12 @@ if not os.path.exists(model_path):
     )
     print("Download complete!")
 
-# Load model
-from manual_model import create_model
+# Load model ONCE at startup
+print("Loading model...")
 model = create_model()
 model.load_weights(model_path)
+model.make_predict_function()  # warms up for faster first prediction
+print("Model ready!")
 
 def preprocess_image(image):
     image = image.convert("RGB")
