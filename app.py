@@ -5,6 +5,9 @@ import gdown
 import os
 import tensorflow as tf
 from manual_model import create_model
+import threading
+import urllib.request
+import time
 
 app = Flask(__name__)
 
@@ -25,8 +28,22 @@ if not os.path.exists(model_path):
 print("Loading model...")
 model = create_model()
 model.load_weights(model_path)
-model.make_predict_function()  # warms up for faster first prediction
+model.make_predict_function()
 print("Model ready!")
+
+# Keep alive — pings every 10 minutes so Render never sleeps
+def keep_alive():
+    while True:
+        time.sleep(600)
+        try:
+            urllib.request.urlopen("https://meddetect-ai.onrender.com")
+            print("Keep alive ping sent!")
+        except:
+            pass
+
+thread = threading.Thread(target=keep_alive)
+thread.daemon = True
+thread.start()
 
 def preprocess_image(image):
     image = image.convert("RGB")
